@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Basic page information -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmIQ - Dashboard</title>
+    
+    <!-- Link to our CSS file for all styling -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Chart.js library - used to create the price chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- This is the main app page - only logged in users can see this -->
+    <!-- NAVIGATION BAR - Stays at the top when you scroll -->
+    <nav class="navbar app-navbar">
+        <div class="nav-container">
+            <!-- Logo on the left -->
+            <div class="logo">
+                <span class="logo-farm">Farm</span><span class="logo-iq">IQ</span>
+            </div>
+            
+            <!-- Navigation links in the center - click to jump to each section -->
+            <div class="nav-center">
+                <a href="#forecast">Forecast</a>
+                <a href="#prices">Prices</a>
+                <a href="#advice">Advice</a>
+                <a href="#settings">Settings</a>
+            </div>
+            
+            <!-- User controls on the right -->
+            <div class="nav-right">
+                <!-- Theme toggle button - switches between light and dark mode -->
+                <button class="theme-toggle" id="theme-toggle">
+                    <span class="theme-icon">☼</span>
+                </button>
+                <!-- User avatar - shows user's initials -->
+                <div class="avatar" id="user-avatar"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO BANNER - Main input area at the top -->
+    <section class="hero-banner">
+        <div class="banner-content">
+            <!-- Greeting message - shows "Good morning, [username]" -->
+            <p class="greeting" id="greeting"></p>
+            <h2>What are you farming today?</h2>
+            
+            <!-- Input fields for city and crop -->
+            <div class="input-group">
+                <!-- City input - user types their location here -->
+                <input type="text" id="city-input" placeholder="Enter your city (e.g. Kigali)">
+                <!-- Crop input - user types what they're growing -->
+                <input type="text" id="crop-input" placeholder="Crop type (e.g. Maize)">
+                <!-- Analyze button - fetches weather and price data -->
+                <button class="btn-analyze" id="analyze-btn">Analyze</button>
+            </div>
+            <!-- Error message shows here if inputs are invalid -->
+            <span class="error-text" id="input-error"></span>
+        </div>
+    </section>
+
+    <!-- SECTION 1: WEATHER FORECAST -->
+    <!-- Shows 5-day weather forecast to help plan planting -->
+    <section id="forecast" class="section">
+        <div class="section-header">
+            <h2>Planting Forecast</h2>
+            <!-- Shows the city name after data is loaded -->
+            <span class="location-badge" id="location-badge"></span>
+        </div>
+        
+        <div class="forecast-content">
+            <!-- Prompt message shown before user clicks Analyze -->
+            <div class="start-prompt" id="forecast-prompt">
+                <p>Enter your city and crop above, then click <strong>Analyze</strong> to see your 5-day planting forecast.</p>
+                <a href="#" class="prompt-link" id="forecast-go-btn">Go to Analyze &rarr;</a>
+            </div>
+            
+            <!-- Error message - shows if weather API fails -->
+            <div class="error-card hidden" id="forecast-error"></div>
+            
+            <!-- Weather cards - one for each day -->
+            <div class="forecast-days" id="forecast-days"></div>
+            
+            <!-- Stats cards - humidity, soil state, wind speed -->
+            <div class="forecast-stats" id="forecast-stats"></div>
+            
+            <!-- Advice box - tells you when to plant based on weather -->
+            <div class="advice-box" id="planting-advice"></div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: CROP PRICES -->
+    <!-- Shows live prices for different crops -->
+    <section id="prices" class="section">
+        <div class="section-header">
+            <h2>Live Crop Prices</h2>
+            <!-- Shows how long ago prices were updated -->
+            <span class="update-badge" id="update-badge"></span>
+        </div>
+        
+        <div class="prices-content">
+            <!-- Prompt message shown before user clicks Analyze -->
+            <div class="start-prompt" id="prices-prompt">
+                <p>Enter your city and crop above, then click <strong>Analyze</strong> to load live crop prices.</p>
+                <a href="#" class="prompt-link" id="prices-go-btn">Go to Analyze &rarr;</a>
+            </div>
+            
+            <!-- Error message - shows if price API fails -->
+            <div class="error-card hidden" id="prices-error"></div>
+            
+            <!-- Controls for filtering and sorting prices -->
+            <div class="prices-controls">
+                <!-- Filter pills - click to show only certain crop types -->
+                <div class="filter-pills" id="filter-pills">
+                    <button class="pill active" data-filter="all">All</button>
+                    <button class="pill" data-filter="grains">Grains</button>
+                    <button class="pill" data-filter="coffee">Coffee</button>
+                    <button class="pill" data-filter="legumes">Legumes</button>
+                    <button class="pill" data-filter="other">Other</button>
+                </div>
+                
+                <!-- Sort buttons - change the order of crops -->
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="name">Name A-Z</button>
+                    <button class="sort-btn" data-sort="price-asc">Price ↑</button>
+                    <button class="sort-btn" data-sort="price-desc">Price ↓</button>
+                </div>
+                
+                <!-- Search box - type to find specific crops -->
+                <input type="text" id="search-input" placeholder="Search crops...">
+            </div>
+            
+            <!-- Price table - shows crop names, prices, and changes -->
+            <div class="price-table" id="price-table"></div>
+            
+            <!-- Chart - visual bar chart of crop prices -->
+            <div class="chart-container">
+                <canvas id="price-chart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: SMART ADVICE -->
+    <!-- Combines weather and prices to give farming recommendations -->
+    <section id="advice" class="section">
+        <div class="section-header">
+            <h2>Smart Advice</h2>
+        </div>
+        <!-- Advice cards appear here after analyzing weather and prices -->
+        <div class="advice-content" id="advice-content"></div>
+    </section>
+
+    <!-- SECTION 4: SETTINGS -->
+    <!-- User preferences and account management -->
+    <section id="settings" class="section">
+        <div class="section-header">
+            <h2>Settings</h2>
+        </div>
+        
+        <div class="settings-card">
+            <!-- Setting 1: Dark mode toggle -->
+            <div class="setting-row">
+                <div class="setting-label">
+                    <strong>Dark Mode</strong>
+                    <span>Switch between light and dark theme</span>
+                </div>
+                <!-- Toggle switch - click to turn dark mode on/off -->
+                <label class="toggle">
+                    <input type="checkbox" id="dark-mode-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <!-- Setting 2: Currency selector -->
+            <div class="setting-row">
+                <div class="setting-label">
+                    <strong>Currency</strong>
+                    <span>Display prices in your preferred currency</span>
+                </div>
+                <!-- Dropdown to choose currency -->
+                <select id="currency-select">
+                    <option value="RWF">RWF</option>
+                    <option value="USD">USD</option>
+                    <option value="KES">KES</option>
+                    <option value="UGX">UGX</option>
+                </select>
+            </div>
+            
+            <!-- Setting 3: Notifications toggle -->
+            <div class="setting-row">
+                <div class="setting-label">
+                    <strong>Notifications</strong>
+                    <span>Receive alerts about weather and prices</span>
+                </div>
+                <!-- Toggle switch for notifications -->
+                <label class="toggle">
+                    <input type="checkbox" id="notifs-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <!-- Setting 4: Default location -->
+            <div class="setting-row">
+                <div class="setting-label">
+                    <strong>Default Location</strong>
+                    <span>Your primary farming location</span>
+                </div>
+                <!-- Input and save button for location -->
+                <div class="location-input-group">
+                    <input type="text" id="default-location" placeholder="Enter city">
+                    <button class="btn-save" id="save-location">Save</button>
+                </div>
+            </div>
+            
+            <!-- Setting 5: Account info -->
+            <div class="setting-row">
+                <div class="setting-label">
+                    <strong>Account</strong>
+                    <!-- Shows user's email address -->
+                    <span id="user-email"></span>
+                </div>
+            </div>
+            
+            <!-- Setting 6: Sign out button -->
+            <div class="setting-row">
+                <!-- Clicking this logs out and returns to landing page -->
+                <button class="btn-signout" id="signout-btn">Sign Out</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ---------------------------------------------
+       FOOTER: Website footer with links and contacts
+    ---------------------------------------------- -->
+    <footer class="footer" aria-labelledby="site-footer-title" class="settings-card">
+        <div class="footer-content">
+
+            <!-- Brand name and copyright -->
+            <section class="footer-col">
+                <div class="logo">
+                    <span class="logo-farm">Farm</span><span class="logo-iq">IQ</span>
+                </div>            
+                <p class="text-muted">Your personal farming companion.</p> <!-- Short description -->
+                <p class="tiny text-muted">
+                &copy; <span id="year"></span> 2026 FarmIQ. All rights reserved. <!-- Auto‑updated year -->
+                </p>
+            </section>
+
+            <!-- Quick links (same as header) -->
+            <nav class="footer-col" aria-label="Quick links">
+                <h4 class="logo-farm">Quick Links</h4>
+                <ul class="footer-list">
+                <li><a href="#forecast">Forecast</a></li> <!-- Link to Dashboard page -->
+                <li><a href="#prices">Prices</a></li> <!-- Link to Records page -->
+                <li><a href="#advice">Advice</a></li> <!-- Link to Add Book page -->
+                <li><a href="#settings">Settings</a></li> <!-- Link to Settings page -->
+                </ul>
+            </nav>
+
+            <!-- Contact information and social media -->
+            <section class="footer-col" aria-label="Contact and social">
+                <h4 class="logo-farm">Contact</h4>
+
+                <ul class="footer-list">
+                <li>Email: <a href="mailto:h.druppi@valut.com">h.druppi@valut.com</a></li> <!-- Email link -->
+                <li>Phone: <a href="tel:+250795000000">+250 795 000 000</a></li> <!-- Phone link -->
+                <li>GitHub: <a href="https://github.com/Bol-Dau" target="_blank" rel="noopener">Bol-Dau</a></li> <!-- GitHub link -->
+                </ul>
+
+                <!-- Social media icons -->
+                <div class="footer-social" aria-label="Social media">
+
+                <!-- Instagram -->
+                <a class="social-link" href="https://instagram.com/yourhandle" target="_blank" rel="noopener" aria-label="Instagram">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 3.5A5.5 5.5 0 1 1 6.5 13 5.5 5.5 0 0 1 12 7.5Zm0 2A3.5 3.5 0 1 0 15.5 13 3.5 3.5 0 0 0 12 9.5Zm5.75-2.25a1 1 0 1 1-1 1 1 1 0 0 1 1-1Z"/>
+                    </svg>
+                </a>
+
+                <!-- Facebook -->
+                <a class="social-link" href="https://facebook.com/yourhandle" target="_blank" rel="noopener" aria-label="Facebook">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M13 3h3a1 1 0 0 1 1 1v3h-3a2 2 0 0 0-2 2v3h5l-1 4h-4v7h-4v-7H6v-4h3V9a5 5 0 0 1 5-5Z"/>
+                    </svg>
+                </a>
+
+                <!-- X / Twitter -->
+                <a class="social-link" href="https://twitter.com/yourhandle" target="_blank" rel="noopener" aria-label="Twitter">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M3 3h4.6l5.2 7.5L19 3h2l-7 9.7L21 21h-4.6l-5.5-8L7 21H5l7-9.7L3 3Z"/>
+                    </svg>
+                </a>
+
+                <!-- TikTok -->
+                <a class="social-link" href="https://tiktok.com/@yourhandle" target="_blank" rel="noopener" aria-label="TikTok">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill="currentColor" d="M14 3h3c.2 2 1.2 3.6 3 4.6V11c-2.2-.4-3.9-1.5-5-3v6.7a6.2 6.2 0 1 1-6.2-6.2c.4 0 .8 0 1.2.1V11a2.8 2.8 0 1 0 2 2.7V3Z"/>
+                    </svg>
+                </a>
+
+            </div>
+        </section>
+
+        </div>
+    </footer>
+
+    <!-- Link to our JavaScript file - loads all interactive features -->
+    <script src="js/app.js"></script>
+</body>
+</html>
