@@ -1,0 +1,14 @@
+# Mac system file
+.DS_Store
+
+# Environment variables
+.env
+
+# Node modules
+node_modules/
+
+# Log files
+*.log
+
+# Backend folder
+backend/
