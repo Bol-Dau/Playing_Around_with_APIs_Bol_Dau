@@ -1,0 +1,13 @@
+{
+    "success": true,
+    "timestamp": 1773842983,
+    "rates": {
+        "CORN": 475.35,
+        "CA": 165.50,
+        "ZW-SPOT": 10.48,
+        "SOYBEAN-SPOT": 999.00,
+        "RR-SPOT": 17.80,
+        "LS": 554.00,
+        "CC": 1111.00
+    }
+}
