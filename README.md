@@ -343,9 +343,14 @@ frontend stats
     stats show-node
     stats auth admin:farmiq2026
 
-# Accepts incoming traffic on port 80
+# HTTP (80): redirect to HTTPS
+frontend http_front
+    bind 0.0.0.0:80
+    http-request redirect scheme https code 301 unless { ssl_fc }
+
+# HTTPS (443): SSL termination
 frontend farmiq_frontend
-    bind *:80
+    bind 0.0.0.0:443 ssl crt /etc/haproxy/certs/www.boldau.tech.pem
     default_backend farmiq_backend
 
 # Distributes traffic between Web01 and Web02

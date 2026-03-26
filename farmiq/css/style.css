@@ -952,6 +952,7 @@ body {
     border: 1px solid var(--border);
     border-radius: 14px;
     box-shadow: 0px 2px 8px rgba(0,0,0,0.06);
+    gap: 1rem;
 }
 
 /* Individual stat card */
@@ -986,6 +987,12 @@ body {
     padding: 1.5rem;
     border-radius: 8px;
     line-height: 1.6;                 /* Spacing between lines */
+}
+
+@media (max-width: 600px) {
+  .today-stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* or 1fr for single column */
+  }
 }
 
 /* ======================================================
@@ -1467,6 +1474,7 @@ body {
     gap: 8rem;
     margin-left: 6rem;
     margin-right: 6rem; 
+    flex-wrap: wrap;
 }
 
 /* Make social media icons smaller */
